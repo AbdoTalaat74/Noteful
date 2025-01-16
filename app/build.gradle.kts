@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.dagger.hilt)
     alias(libs.plugins.serialization)
+    id("kotlin-parcelize")
 
 }
 
@@ -84,6 +85,8 @@ dependencies {
     implementation (libs.androidx.foundation)
 
     implementation("androidx.compose.material3:material3-window-size-class:1.3.1")
+
+    implementation (libs.material3)
 
 
 }
