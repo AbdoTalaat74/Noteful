@@ -1,21 +1,50 @@
 package com.example.noteful.presentation.main
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.noteful.domain.model.Category
 import com.example.noteful.domain.model.Note
+import com.example.noteful.domain.usecases.NotesUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor() : ViewModel() {
+class MainViewModel @Inject constructor(
+    private val notesUseCases: NotesUseCases
+) : ViewModel() {
+
+
+    private val _query = MutableStateFlow("")
+    val query: StateFlow<String> = _query
+
+    fun updateQuery(newQuery: String) {
+        _query.value = newQuery
+    }
+
+
+    private val _categorySelected = MutableStateFlow("All")
+    val categorySelected: StateFlow<String> = _categorySelected
+
+    fun updateCategorySelected(newSelectedCategory: String) {
+        _categorySelected.value = newSelectedCategory
+        if (newSelectedCategory == "All"){
+            getNotes()
+        }else{
+//            getNotesByCategory(newSelectedCategory)
+        }
+    }
+
+
     private val _notesState = MutableStateFlow(
-        NoteState(
+        NotesState(
             notes = emptyList(), isLoading = false, error = null
         )
     )
-    val notesState: StateFlow<NoteState> = _notesState
+    val notesState: StateFlow<NotesState> = _notesState
 
 
     private val _categoriesState = MutableStateFlow(
@@ -25,135 +54,79 @@ class MainViewModel @Inject constructor() : ViewModel() {
     )
     val categoriesState: StateFlow<CategoryState> = _categoriesState
 
+
     init {
         getNotes()
         getCategories()
     }
 
-    private fun getNotes() {
-        _notesState.value = _notesState.value.copy(
-            notes = listOf(
-                Note(
-                    id = 1,
-                    title = "Grocery List",
-                    description = "Buy milk, eggs, bread, and butter for the weekend.",
-                    categoryName = "Shopping"
-                ),
-                Note(
-                    id = 2,
-                    title = "Meeting Notes",
-                    description = "Discuss the project timeline and assign tasks to team members. Review the budget plan for Q1.",
-                    categoryName = "Work"
-                ),
-                Note(
-                    id = 3,
-                    title = "Workout Plan",
-                    description = "Morning run at 7 AM, followed by weightlifting. Focus on upper body strength exercises.Morning run at 7 AM, followed by weightlifting. Focus on upper body strength exercises.Morning run at 7 AM, followed by weightlifting. Focus on upper body strength exercises.",
-                    categoryName = "Fitness"
-                ),
-                Note(
-                    id = 4,
-                    title = "Book Recommendations",
-                    description = "1. 'Atomic Habits' by James Clear\n2. 'The Alchemist' by Paulo Coelho\n3. 'Deep Work' by Cal Newport.",
-                    categoryName = "Reading"
-                ),
-                Note(
-                    id = 2,
-                    title = "Meeting Notes",
-                    description = "Discuss the project timeline and assign tasks to team members. Review the budget plan for Q1.",
-                    categoryName = "Work"
-                ),
-                Note(
-                    id = 3,
-                    title = "Workout Plan",
-                    description = "Morning run at 7 AM, followed by weightlifting. Focus on upper body strength exercises.Morning run at 7 AM, followed by weightlifting. Focus on upper body strength exercises.Morning run at 7 AM, followed by weightlifting. Focus on upper body strength exercises.",
-                    categoryName = "Fitness"
-                ),
-                Note(
-                    id = 4,
-                    title = "Book Recommendations",
-                    description = "1. 'Atomic Habits' by James Clear\n2. 'The Alchemist' by Paulo Coelho\n3. 'Deep Work' by Cal Newport.",
-                    categoryName = "Reading"
-                ),
-                Note(
-                    id = 5,
-                    title = "Weekend Plans",
-                    description = "Visit the park, have lunch at the new Italian restaurant, and watch a movie in the evening.",
-                    categoryName = "Personal"
-                ),
-                Note(
-                    id = 3,
-                    title = "Workout Plan",
-                    description = "Morning run at 7 AM, followed by weightlifting. Focus on upper body strength exercises.Morning run at 7 AM, followed by weightlifting. Focus on upper body strength exercises.Morning run at 7 AM, followed by weightlifting. Focus on upper body strength exercises.",
-                    categoryName = "Fitness"
-                ),
-                Note(
-                    id = 5,
-                    title = "Weekend Plans",
-                    description = "Visit the park, have lunch at the new Italian restaurant, and watch a movie in the evening.",
-                    categoryName = "Personal"
-                ),
-                Note(
-                    id = 1,
-                    title = "Grocery List",
-                    description = "Buy milk, eggs, bread, and butter for the weekend.",
-                    categoryName = "Shopping"
-                ),
-                Note(
-                    id = 2,
-                    title = "Meeting Notes",
-                    description = "Discuss the project timeline and assign tasks to team members. Review the budget plan for Q1.",
-                    categoryName = "Work"
-                ),
 
-                Note(
-                    id = 4,
-                    title = "Book Recommendations",
-                    description = "1. 'Atomic Habits' by James Clear\n2. 'The Alchemist' by Paulo Coelho\n3. 'Deep Work' by Cal Newport.",
-                    categoryName = "Reading"
-                ),
-                Note(
-                    id = 5,
-                    title = "Weekend Plans",
-                    description = "Visit the park, have lunch at the new Italian restaurant, and watch a movie in the evening.",
-                    categoryName = "Personal"
-                ),
-                Note(
-                    id = 1,
-                    title = "Grocery List",
-                    description = "Buy milk, eggs, bread, and butter for the weekend.",
-                    categoryName = "Shopping"
-                ),
-
-
+    fun searchNote(query: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val notes = notesUseCases.searchNoteUseCase.searchNote(query)
+                _notesState.value = _notesState.value.copy(
+                    notes = notes
                 )
-        )
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
-    private fun getCategories(){
-        _categoriesState.value = _categoriesState.value.copy(
-            categories = listOf(
-                Category(
-                    categoryName = "All notes",
-                    notes = emptyList()
-                ),
-                Category(
-                    categoryName = "Important",
-                    notes = emptyList()
-                ),
-                Category(
-                    categoryName = "Lecture notes",
-                    notes = emptyList()
-                ),
-                Category(
-                    categoryName = "To-do list",
-                    notes = emptyList()
-                ),
-                Category(
-                    categoryName = "Shopping",
-                    notes = emptyList()
-                ),
-            )
-        )
+
+    private fun addNote(note: Note) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                notesUseCases.upsertNoteUseCase.addNote(note)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
+
+    fun onSearchEmpty(){
+        getNotes()
+    }
+
+    private fun getNotes() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val notes = notesUseCases.getAllNotesUseCase()
+                _notesState.value = _notesState.value.copy(
+                    notes = notes
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun getCategories() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val categories = notesUseCases.getCategoriesUseCase()
+                _categoriesState.value = _categoriesState.value.copy(
+                    categories = categories
+                )
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+
+    }
+
+    fun addCategory(category: Category) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                notesUseCases.addCategoryUseCase.addCategory(category)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+    }
+
 }
