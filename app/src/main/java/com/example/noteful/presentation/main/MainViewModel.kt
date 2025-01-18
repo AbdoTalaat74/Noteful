@@ -2,7 +2,6 @@ package com.example.noteful.presentation.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.noteful.domain.model.Category
 import com.example.noteful.domain.model.Note
 import com.example.noteful.domain.usecases.NotesUseCases
@@ -17,12 +16,35 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val notesUseCases: NotesUseCases
 ) : ViewModel() {
+
+
+    private val _query = MutableStateFlow("")
+    val query: StateFlow<String> = _query
+
+    fun updateQuery(newQuery: String) {
+        _query.value = newQuery
+    }
+
+
+    private val _categorySelected = MutableStateFlow("All")
+    val categorySelected: StateFlow<String> = _categorySelected
+
+    fun updateCategorySelected(newSelectedCategory: String) {
+        _categorySelected.value = newSelectedCategory
+        if (newSelectedCategory == "All"){
+            getNotes()
+        }else{
+//            getNotesByCategory(newSelectedCategory)
+        }
+    }
+
+
     private val _notesState = MutableStateFlow(
-        NoteState(
+        NotesState(
             notes = emptyList(), isLoading = false, error = null
         )
     )
-    val notesState: StateFlow<NoteState> = _notesState
+    val notesState: StateFlow<NotesState> = _notesState
 
 
     private val _categoriesState = MutableStateFlow(
@@ -32,21 +54,39 @@ class MainViewModel @Inject constructor(
     )
     val categoriesState: StateFlow<CategoryState> = _categoriesState
 
+
     init {
         getNotes()
         getCategories()
-
-
     }
 
-    private fun addNote(note: Note) {
+
+    fun searchNote(query: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                notesUseCases.addNoteUseCase.addNote(note)
+                val notes = notesUseCases.searchNoteUseCase.searchNote(query)
+                _notesState.value = _notesState.value.copy(
+                    notes = notes
+                )
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
+    }
+
+
+    private fun addNote(note: Note) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                notesUseCases.upsertNoteUseCase.addNote(note)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun onSearchEmpty(){
+        getNotes()
     }
 
     private fun getNotes() {
@@ -60,7 +100,6 @@ class MainViewModel @Inject constructor(
                 e.printStackTrace()
             }
         }
-
     }
 
     private fun getCategories() {

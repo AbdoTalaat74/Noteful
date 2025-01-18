@@ -87,6 +87,8 @@ dependencies {
     implementation("androidx.compose.material3:material3-window-size-class:1.3.1")
 
     implementation (libs.material3)
+    implementation(libs.kotlinx.serialization.json)
+
 
 
 }

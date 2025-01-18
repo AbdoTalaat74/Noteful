@@ -1,8 +1,8 @@
 package com.example.noteful.presentation.composables
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,7 +16,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -32,35 +31,28 @@ import com.example.noteful.ui.theme.dimens
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
-    text: String,
+    searchText: String,
     readOnly: Boolean,
-    onClick: (() -> Unit)? = null,
     onValueChange: (String) -> Unit,
-    onSearch: () -> Unit
+    onSearch: (String) -> Unit
 ) {
     val interactionSource = remember {
         MutableInteractionSource()
     }
-    val isClicked = interactionSource.collectIsPressedAsState().value
-    //TODO remove interactionSource to see what happens
-    LaunchedEffect(key1 = isClicked) {
-        if (isClicked) {
-            onClick?.invoke()
-        }
-    }
-
     Box(modifier = modifier.padding(horizontal = 8.dp)) {
         TextField(
             modifier = Modifier
                 .fillMaxWidth(),
-            value = text,
+            value = searchText,
             onValueChange = onValueChange,
             readOnly = readOnly,
             leadingIcon = {
                 Icon(
                     painter = painterResource(R.drawable.ic_search),
                     contentDescription = null,
-                    modifier = Modifier.size(MaterialTheme.dimens.iconSize),
+                    modifier = Modifier.size(MaterialTheme.dimens.iconSize).clickable {
+                        onSearch(searchText)
+                    },
                     tint = colorResource(id = R.color.body)
                 )
             },
@@ -87,7 +79,7 @@ fun SearchBar(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(
                 onSearch = {
-                    onSearch()
+                    onSearch(searchText)
                 }
             ),
             textStyle = MaterialTheme.typography.bodyMedium,

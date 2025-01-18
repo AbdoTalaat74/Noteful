@@ -12,5 +12,7 @@ interface NotesRepository {
     suspend fun upsertCategory(category: Category)
     suspend fun getCategoryWithNotes(categoryName: String): List<CategoryWithNotes>
     suspend fun getCategories(): List<Category>
+    suspend fun getNoteById(id: Int):Note?
+    suspend fun searchNotes(query: String): List<Note>
 
 }

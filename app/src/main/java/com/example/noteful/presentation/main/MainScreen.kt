@@ -26,6 +26,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.R
+import com.example.noteful.domain.model.Category
+import com.example.noteful.domain.model.Note
 import com.example.noteful.presentation.composables.CategoryCard
 import com.example.noteful.presentation.composables.NoteCard
 import com.example.noteful.presentation.composables.SearchBar
@@ -34,11 +36,16 @@ import com.example.noteful.ui.theme.dimens
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
-    noteState: NoteState,
-    categoryState: CategoryState
+    searchText: String,
+    onSearchTextChange: (String) -> Unit,
+    onSearch: (String) -> Unit,
+    noteState: NotesState,
+    categoryState: CategoryState,
+    onNoteClick: (note: Note) -> Unit,
+    onCategoryChanged: (String) -> Unit
 ) {
 
-    var selectedTabIndex by remember { mutableIntStateOf(0) } // Track selected tab index
+    var selectedTabIndex by remember { mutableIntStateOf(-1) } // Track selected tab index
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -51,7 +58,7 @@ fun MainScreen(
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add Note",
-                    tint = if(isSystemInDarkTheme()) Color.Black else Color.White
+                    tint = if (isSystemInDarkTheme()) Color.Black else Color.White
                 )
             }
         }
@@ -62,11 +69,14 @@ fun MainScreen(
                 .padding(paddingValues)
         ) {
             SearchBar(
-                text = "Search For Notes",
+                searchText = searchText,
                 readOnly = false,
-                onValueChange = {},
-                onSearch = {},
-                onClick = {}
+                onValueChange = {
+                    onSearchTextChange(it)
+                },
+                onSearch = {
+                    onSearch(it)
+                },
             )
             Spacer(modifier = Modifier.height(MaterialTheme.dimens.small1))
 
@@ -76,18 +86,42 @@ fun MainScreen(
                 selectedTabIndex = selectedTabIndex,
                 indicator = { /* Remove the default indicator by providing an empty Box */ },
                 containerColor = MaterialTheme.colorScheme.surface, // Optional: customize background
-                contentColor = MaterialTheme.colorScheme.primary // Optional: customize content color
+                contentColor = MaterialTheme.colorScheme.primary // Optional: customize content color,
             ) {
+                Tab(
+                    selected = selectedTabIndex == -1,
+                    onClick = {
+                        selectedTabIndex = -1
+                        onCategoryChanged("All")
+                    },
+                    content = {
+                        CategoryCard(
+                            category = Category(
+                                categoryName = "All"
+                            ),
+                            containerColor = if (selectedTabIndex == -1) colorResource(R.color.selected_tab_container) else Color.Transparent
+                        )
+                    },
+                    selectedContentColor = if (isSystemInDarkTheme()) Color.Black else Color.White,
+                    unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                )
 
                 categoryState.categories.forEachIndexed { index, category ->
                     val containerColor =
                         if (selectedTabIndex == index) colorResource(R.color.selected_tab_container) else Color.Transparent
                     Tab(
-                        modifier = Modifier.padding(MaterialTheme.dimens.small1),
                         selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
-                        content = { CategoryCard(category = category, containerColor = containerColor) },
-                        selectedContentColor = if(isSystemInDarkTheme()) Color.Black else Color.White,
+                        onClick = {
+                            selectedTabIndex = index
+                            onCategoryChanged(category.categoryName)
+                        },
+                        content = {
+                            CategoryCard(
+                                category = category,
+                                containerColor = containerColor
+                            )
+                        },
+                        selectedContentColor = if (isSystemInDarkTheme()) Color.Black else Color.White,
                         unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 }
@@ -100,7 +134,9 @@ fun MainScreen(
                 items(noteState.notes.size) { index ->
                     NoteCard(
                         note = noteState.notes[index],
-                        onClick = {}
+                        onClick = {
+                            onNoteClick(noteState.notes[index])
+                        }
                     )
                 }
             }

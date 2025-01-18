@@ -31,7 +31,7 @@ interface NotesDao {
     suspend fun getNoteById(id: Int): Note?
 
 
-    @Query("SELECT * FROM Note WHERE title LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%'")
+    @Query("SELECT * FROM Note WHERE text LIKE '%' || :query || '%' OR categoryName LIKE '%' || :query || '%'")
     suspend fun searchNotes(query: String): List<Note>
 
 

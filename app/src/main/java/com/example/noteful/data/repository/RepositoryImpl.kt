@@ -28,4 +28,12 @@ class RepositoryImpl(
     override suspend fun getCategories(): List<Category> {
         return dao.getCategories()
     }
+
+    override suspend fun getNoteById(id: Int): Note? {
+        return dao.getNoteById(id)
+    }
+
+    override suspend fun searchNotes(query: String): List<Note> {
+        return dao.searchNotes(query)
+    }
 }

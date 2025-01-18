@@ -36,11 +36,14 @@ fun CategoryCard(
     {
         Text(
             text = category.categoryName,
-            maxLines = 1, // Limit to one line
+            maxLines = 1, // Limit to one line,,
             textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.bodySmall,
             modifier= Modifier
                 .fillMaxWidth()
-                .padding(MaterialTheme.dimens.small1))
+                .padding(MaterialTheme.dimens.small1)
+                .padding(horizontal = MaterialTheme.dimens.small1))
+
     }
 
 }
