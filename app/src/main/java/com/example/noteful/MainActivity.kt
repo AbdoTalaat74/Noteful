@@ -12,13 +12,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.example.noteful.domain.model.Category
 import com.example.noteful.domain.model.Note
+import com.example.noteful.presentation.composables.InputDialog
 import com.example.noteful.presentation.main.MainScreen
 import com.example.noteful.presentation.main.MainViewModel
 import com.example.noteful.presentation.note.NoteScreen
@@ -45,13 +50,30 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun NotesAroundApp() {
+        var showDialog by remember { mutableStateOf(false) }
         val navController = rememberNavController()
+        val mainViewModel: MainViewModel = hiltViewModel()
+        Log.e("DialogInputLig",showDialog.toString())
+
+        if (showDialog){
+            InputDialog(
+                title = "Enter Category Name",
+                onCancel = {
+                    showDialog = false
+                           },
+                onDone = { input ->
+                    mainViewModel.addCategory(Category(categoryName = input))
+                    showDialog = false
+                }
+            )
+        }
+
+
         NavHost(
             navController = navController,
             startDestination = MainScreenRout
         ) {
             composable<MainScreenRout> {
-                val mainViewModel: MainViewModel = hiltViewModel()
                 val noteState by mainViewModel.notesState.collectAsState()
                 val categoryState by mainViewModel.categoriesState.collectAsState()
                 val query by mainViewModel.query.collectAsState()
@@ -118,8 +140,14 @@ class MainActivity : ComponentActivity() {
                                 noteCategoryName = selectedCategory
                             )
                         )
+                    },
+                    onAddCategoryClick = {
+                        showDialog = true
                     }
+
+
                 )
+
             }
             composable<NoteScreenRout> {
                 val noteId = it.toRoute<NoteScreenRout>().noteId
@@ -147,6 +175,7 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+
     }
 
     @Serializable

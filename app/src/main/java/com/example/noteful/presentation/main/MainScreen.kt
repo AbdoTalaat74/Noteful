@@ -44,7 +44,8 @@ fun MainScreen(
     categoryState: CategoryState,
     onNoteClick: (note: Note) -> Unit,
     onCategoryChanged: (String) -> Unit,
-    onFloatingActionButtonClick:()-> Unit
+    onFloatingActionButtonClick:()-> Unit,
+    onAddCategoryClick:() -> Unit = {}
 ) {
 
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(-1)  }  // Track selected tab index
@@ -129,6 +130,24 @@ fun MainScreen(
                         unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 }
+
+                Tab(
+                    selected = false,
+                    onClick = {
+                        onAddCategoryClick()
+                    },
+                    content = {
+                        CategoryCard(
+                            category = Category(
+                                categoryName = "Add Category"
+                            ),
+                            containerColor = Color.Transparent
+                        )
+                    },
+
+                    unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                )
+
             }
             Spacer(modifier = Modifier.height(MaterialTheme.dimens.small1))
             LazyVerticalStaggeredGrid(

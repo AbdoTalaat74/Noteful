@@ -30,7 +30,8 @@ fun CategoryCard(
                 width = 1.dp,
                 color = if (isSystemInDarkTheme()) Color.LightGray else Color.DarkGray,
                 shape =RoundedCornerShape(MaterialTheme.dimens.small1)
-            ),
+            )
+        ,
         shape = RoundedCornerShape(MaterialTheme.dimens.small1),
         colors = CardDefaults.cardColors(containerColor = containerColor),
     )

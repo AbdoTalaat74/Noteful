@@ -133,6 +133,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 notesUseCases.addCategoryUseCase.addCategory(category)
+                getCategories()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
