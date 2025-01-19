@@ -36,4 +36,12 @@ class RepositoryImpl(
     override suspend fun searchNotes(query: String): List<Note> {
         return dao.searchNotes(query)
     }
+
+    override suspend fun deleteNote(note: Note) {
+        dao.deleteNote(note)
+    }
+
+    override suspend fun updateNote(note: Note) {
+        dao.updateNote(note)
+    }
 }

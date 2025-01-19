@@ -1,6 +1,7 @@
 package com.example.noteful
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -17,6 +18,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.example.noteful.domain.model.Note
 import com.example.noteful.presentation.main.MainScreen
 import com.example.noteful.presentation.main.MainViewModel
 import com.example.noteful.presentation.note.NoteScreen
@@ -35,6 +37,7 @@ class MainActivity : ComponentActivity() {
             MyApplicationTheme(dynamicColor = false) {
 
                 NotesAroundApp()
+
             }
 
         }
@@ -52,6 +55,19 @@ class MainActivity : ComponentActivity() {
                 val noteState by mainViewModel.notesState.collectAsState()
                 val categoryState by mainViewModel.categoriesState.collectAsState()
                 val query by mainViewModel.query.collectAsState()
+                val selectedCategory by mainViewModel.categorySelected.collectAsState()
+
+
+                val navBackStackEntry = navController.currentBackStackEntry
+                navBackStackEntry?.savedStateHandle?.getLiveData<Boolean>("refresh_notes")?.observeForever { shouldRefresh ->
+                    if (shouldRefresh == true) {
+                        Log.e("navBackStackEntryLog","Refreshed")
+                        mainViewModel.refreshNotes()
+                        // Reset the value to prevent repeated refreshes
+                        navBackStackEntry.savedStateHandle["refresh_notes"] = false
+                    }
+                }
+
                 MainScreen(
                     modifier = Modifier
                         .fillMaxSize()
@@ -66,47 +82,69 @@ class MainActivity : ComponentActivity() {
                     onNoteClick = {
                         navController.navigate(
                             NoteScreenRout(
-                                noteId = it.id,
+                                it.id,
+                                it.text,
+                                it.categoryName
                             )
                         )
                     },
                     onSearchTextChange = {
-                        if (it.isEmpty()){
+                        if (it.isEmpty()) {
                             mainViewModel.onSearchEmpty()
                             mainViewModel.updateQuery(it)
-                        }else{
+                        } else {
                             mainViewModel.updateQuery(it)
                             mainViewModel.searchNote(it)
                         }
                     },
                     onSearch = {
-                        if (it.isNotEmpty()){
+                        if (it.isNotEmpty()) {
                             mainViewModel.searchNote(it)
                         }
                     },
                     onCategoryChanged = {
+                        Log.e("updateCategorySelectedLog",it)
                         mainViewModel.updateCategorySelected(it)
+                    },
+                    onFloatingActionButtonClick = {
+                        val note = Note(
+                            text = "",
+                            categoryName = selectedCategory
+                        )
+                        navController.navigate(
+                            NoteScreenRout(
+                                noteId = note.id,
+                                noteText = note.text,
+                                noteCategoryName = selectedCategory
+                            )
+                        )
                     }
                 )
             }
-
             composable<NoteScreenRout> {
-                val noteViewModel: NoteViewModel = hiltViewModel()
                 val noteId = it.toRoute<NoteScreenRout>().noteId
-                noteViewModel.updateNoteId(noteId)
-
+                val isNewNote = it.toRoute<NoteScreenRout>().noteText.isEmpty()
+                val noteCategoryName = it.toRoute<NoteScreenRout>().noteCategoryName
+                val noteViewModel:NoteViewModel = hiltViewModel()
                 val noteState by noteViewModel.noteState.collectAsState()
-
+                if (isNewNote){
+                    noteViewModel.updateCategoryName(noteCategoryName)
+                    Log.e("updateCategoryName",noteCategoryName)
+                }
                 NoteScreen(
-                    noteState = noteState,
+                    noteId = noteId,
+                    isNewNote = isNewNote,
                     onBackClick = {
-                        noteViewModel.saveNote()
+                        if (noteState.note.text == ""){
+                            noteViewModel.deleteNote(noteState.note)
+                        }else{
+                            noteViewModel.saveNote()
+                            Log.e("onBackClick", noteState.note.text)
+                        }
+                        navController.previousBackStackEntry?.savedStateHandle?.set("refresh_notes", true)
                         navController.navigateUp()
-                    },
-                    onClipboardClick = {},
-                    onFavoriteClick = {}
+                    }
                 )
-
             }
         }
     }
@@ -117,6 +155,8 @@ class MainActivity : ComponentActivity() {
     @Serializable
     data class NoteScreenRout(
         val noteId: Int,
+        val noteText: String,
+        val noteCategoryName: String
     )
 }
 

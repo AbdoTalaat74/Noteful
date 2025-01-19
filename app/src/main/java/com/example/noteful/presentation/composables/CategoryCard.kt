@@ -25,6 +25,7 @@ fun CategoryCard(
 ) {
     Card(
         modifier = modifier
+            .padding(horizontal = MaterialTheme.dimens.small2, vertical = MaterialTheme.dimens.small1)
             .border(
                 width = 1.dp,
                 color = if (isSystemInDarkTheme()) Color.LightGray else Color.DarkGray,

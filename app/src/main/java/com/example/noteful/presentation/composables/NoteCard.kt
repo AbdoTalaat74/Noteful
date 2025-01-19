@@ -44,8 +44,8 @@ fun NoteCard(
     ) {
         val parts =
             note.text.split("\n", limit = 2) // Split text into two parts at the first newline
-        val beforeNewline = parts.getOrNull(0) ?: "" // Text before the newline
-        val afterNewline = parts.getOrNull(1) ?: "" // Text after the newline
+        val beforeNewline = if (parts[0].isEmpty()) "New Note" else parts.getOrNull(0) ?: "New Note" // Text before the newline
+        val afterNewline = parts.getOrNull(1) ?: "No additional text" // Text after the newline
 
         Column(
             modifier = Modifier

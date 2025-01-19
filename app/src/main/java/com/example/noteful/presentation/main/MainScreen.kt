@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,16 +43,19 @@ fun MainScreen(
     noteState: NotesState,
     categoryState: CategoryState,
     onNoteClick: (note: Note) -> Unit,
-    onCategoryChanged: (String) -> Unit
+    onCategoryChanged: (String) -> Unit,
+    onFloatingActionButtonClick:()-> Unit
 ) {
 
-    var selectedTabIndex by remember { mutableIntStateOf(-1) } // Track selected tab index
+    var selectedTabIndex by rememberSaveable { mutableIntStateOf(-1)  }  // Track selected tab index
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* Handle FAB click */ },
+                onClick = {
+                    onFloatingActionButtonClick()
+                },
                 containerColor = colorResource(R.color.selected_tab_container),
                 contentColor = Color.White
             ) {

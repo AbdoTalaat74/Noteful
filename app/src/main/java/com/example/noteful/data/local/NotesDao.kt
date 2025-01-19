@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import com.example.noteful.data.local.relations.CategoryWithNotes
 import com.example.noteful.domain.model.Category
 import com.example.noteful.domain.model.Note
@@ -35,10 +36,6 @@ interface NotesDao {
     suspend fun searchNotes(query: String): List<Note>
 
 
-    @Query("SELECT * FROM Note WHERE categoryName = :categoryName")
-    suspend fun getNotesByCategory(categoryName: String): List<Note>
-
-
     @Query("SELECT * FROM Category WHERE categoryName = :categoryName")
     suspend fun getCategoryByName(categoryName: String): Category?
 
@@ -48,4 +45,8 @@ interface NotesDao {
     @Transaction
     @Query("SELECT * FROM Category WHERE categoryName = :categoryName")
     suspend fun getCategoryWithNotes(categoryName: String):List<CategoryWithNotes>
+
+
+    @Update
+    suspend fun updateNote(note: Note)
 }

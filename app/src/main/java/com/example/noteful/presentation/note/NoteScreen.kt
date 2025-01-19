@@ -1,6 +1,7 @@
 package com.example.noteful.presentation.note
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,23 +16,33 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.myapplication.R
 import com.example.noteful.HeaderBodyTransformation
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 
 @Composable
 fun NoteScreen(
     modifier: Modifier = Modifier,
-    noteState: NoteState,
-    onBackClick: () -> Unit,
-    onFavoriteClick: () -> Unit,
-    onClipboardClick: () -> Unit
+    noteId:Int,
+    isNewNote:Boolean = false,
+    onBackClick: () ->Unit
 ) {
-
+    val context = LocalContext.current
+    val clipboardManager: ClipboardManager = LocalClipboardManager.current
     val noteViewModel: NoteViewModel = hiltViewModel()
+    if (!isNewNote){
+        noteViewModel.getNoteById(noteId)
+    }
+    val noteState by noteViewModel.noteState.collectAsState()
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -40,16 +51,15 @@ fun NoteScreen(
                     onBackClick()
                 },
                 onClipboardClick = {
-                    onClipboardClick()
+                    clipboardManager.setText(AnnotatedString(noteState.note.text))
+                    Toast.makeText(context, "Copied to clipboard!", Toast.LENGTH_SHORT).show()
                 },
                 onFavoriteClick = {
-                    onFavoriteClick()
                 }
             )
         }
     ) { paddingValues ->
 
-        Log.e("NoteStateLog", noteState.note.text)
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -100,19 +110,19 @@ private fun NoteTopAppBar(
                     IconButton(onClick = { onClipboardClick() }) {
                         Icon(
                             painter = painterResource(R.drawable.clipboardtext), // Replace with your icon
-                            contentDescription = "Home Icon"
+                            contentDescription = "Copy to Clipboard"
                         )
                     }
                     IconButton(onClick = { onFavoriteClick() }) {
                         Icon(
                             painter = painterResource(R.drawable.heart), // Replace with your icon
-                            contentDescription = "Search Icon"
+                            contentDescription = "Add to Favorites"
                         )
                     }
                     IconButton(onClick = { /* Handle third icon click */ }) {
                         Icon(
                             painter = painterResource(R.drawable.directboxsend), // Replace with your icon
-                            contentDescription = "Settings Icon"
+                            contentDescription = "Share"
                         )
                     }
                 }
@@ -120,4 +130,3 @@ private fun NoteTopAppBar(
         },
     )
 }
-

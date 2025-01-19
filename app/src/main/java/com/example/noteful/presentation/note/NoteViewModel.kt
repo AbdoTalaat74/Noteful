@@ -15,90 +15,75 @@ import javax.inject.Inject
 @HiltViewModel
 class NoteViewModel @Inject constructor(
     private val notesUseCases: NotesUseCases
-):ViewModel() {
+) : ViewModel() {
 
 
-    private val _noteId = MutableStateFlow<Int>(0)
 
-    fun updateNoteId(id:Int) {
-        _noteId.value = id
-    }
 
     private val _noteState = MutableStateFlow(
         NoteState(
             note = Note(
                 text = "",
-                categoryName ="Important",
+                categoryName = "",
             ),
             isLoading = false,
             error = null
         )
     )
-    val noteState:StateFlow<NoteState> = _noteState
+    val noteState: StateFlow<NoteState> = _noteState
 
-
-
-    init {
-        viewModelScope.launch {
-            _noteId.collect { id ->
-                Log.e("NoteIdLog", "Note ID updated: $id")
-
-                getNoteById(_noteId.value)
-
-            }
-
-        }
-
-    }
-
-
-    fun updateNoteText(text: String) {
+    fun updateCategoryName(categoryName: String) {
+        val currentNote = _noteState.value.note
         _noteState.value = _noteState.value.copy(
-            note = Note(
-                text = text,
-                categoryName = _noteState.value.note.categoryName,
+            note = currentNote.copy(
+                categoryName = categoryName
             )
         )
     }
 
-    fun saveNote(){
+    fun updateNoteText(text: String) {
+        val currentNote = _noteState.value.note
+        _noteState.value = _noteState.value.copy(
+            note = currentNote.copy(
+                text = text
+            )
+        )
+    }
+
+    fun saveNote() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 notesUseCases.upsertNoteUseCase.addNote(_noteState.value.note)
-            }catch (e:Exception){
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
 
-    private fun getNoteById(id:Int){
+    fun getNoteById(noteId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                if (_noteId.value != 0 ){
-                    val note = notesUseCases.getNoteByIdUseCase.getNoteById(id)
-                    if (note != null){
-                        _noteState.value = _noteState.value.copy(
-                            note = note
-                        )
-                    }else{
-                        _noteState.value = _noteState.value.copy(
-                            note = Note(
-                                text = "",
-                                categoryName = "All Notes",
-                            )
-                        )
-                    }
-                }else{
+                val note = notesUseCases.getNoteByIdUseCase.getNoteById(noteId)
+                if (note != null) {
                     _noteState.value = _noteState.value.copy(
-                        note = Note(
-                            text = "",
-                            categoryName = "All Notes",
-                        )
+                        note = note
                     )
                 }
-            }catch (e:Exception){
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+     fun deleteNote(note: Note) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                notesUseCases.deleteNoteUseCase.deleteNote(note)
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
 }
+
+

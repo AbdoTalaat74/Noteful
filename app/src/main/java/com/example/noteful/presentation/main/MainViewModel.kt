@@ -1,5 +1,6 @@
 package com.example.noteful.presentation.main
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.noteful.domain.model.Category
@@ -26,15 +27,32 @@ class MainViewModel @Inject constructor(
     }
 
 
+
     private val _categorySelected = MutableStateFlow("All")
     val categorySelected: StateFlow<String> = _categorySelected
 
     fun updateCategorySelected(newSelectedCategory: String) {
         _categorySelected.value = newSelectedCategory
-        if (newSelectedCategory == "All"){
+        if (newSelectedCategory == "All") {
             getNotes()
-        }else{
-//            getNotesByCategory(newSelectedCategory)
+        } else {
+            getNotesByCategory(newSelectedCategory)
+        }
+    }
+
+    private fun getNotesByCategory(selectedCategory: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val notes =
+                    notesUseCases.getCategoryWithNotesUseCase(categoryName = selectedCategory)
+                notes.forEach {
+                    _notesState.value = _notesState.value.copy(
+                        notes = it.notes
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -58,6 +76,8 @@ class MainViewModel @Inject constructor(
     init {
         getNotes()
         getCategories()
+
+
     }
 
 
@@ -74,18 +94,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-
-    private fun addNote(note: Note) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                notesUseCases.upsertNoteUseCase.addNote(note)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
-    fun onSearchEmpty(){
+    fun onSearchEmpty() {
         getNotes()
     }
 
@@ -100,6 +109,10 @@ class MainViewModel @Inject constructor(
                 e.printStackTrace()
             }
         }
+    }
+
+    fun refreshNotes() {
+        getNotes()
     }
 
     private fun getCategories() {
