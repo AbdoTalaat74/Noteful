@@ -8,6 +8,5 @@ data class NotesUseCases(
     val getCategoriesUseCase: GetCategoriesUseCase,
     val getNoteByIdUseCase: GetNoteByIdUseCase,
     val searchNoteUseCase: SearchNoteUseCase,
-    val deleteNoteUseCase: DeleteNoteUseCase,
-    val updateNoteUseCase: UpdateNoteUseCase
+    val deleteNoteUseCase: DeleteNoteUseCase
 )

@@ -1,6 +1,5 @@
 package com.example.noteful.presentation.note
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.noteful.domain.model.Note

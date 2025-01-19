@@ -1,10 +1,8 @@
 package com.example.noteful.presentation.main
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.noteful.domain.model.Category
-import com.example.noteful.domain.model.Note
 import com.example.noteful.domain.usecases.NotesUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers

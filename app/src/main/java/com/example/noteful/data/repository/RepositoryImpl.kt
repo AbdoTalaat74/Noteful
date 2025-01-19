@@ -41,7 +41,4 @@ class RepositoryImpl(
         dao.deleteNote(note)
     }
 
-    override suspend fun updateNote(note: Note) {
-        dao.updateNote(note)
-    }
 }

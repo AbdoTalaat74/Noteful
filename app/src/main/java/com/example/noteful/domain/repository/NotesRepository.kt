@@ -15,5 +15,4 @@ interface NotesRepository {
     suspend fun getNoteById(id: Int):Note?
     suspend fun searchNotes(query: String): List<Note>
     suspend fun deleteNote(note:Note)
-    suspend fun updateNote(note: Note)
 }
