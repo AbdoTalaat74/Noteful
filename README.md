@@ -15,7 +15,7 @@ The **Noteful** is a modern Android application designed to help users efficient
 
 ## Tech Stack
 
-### 🛠 Architectural Pattern
+### 🚠 Architectural Pattern
 - **Clean Architecture**: 
   - Modular structure with clear separation of concerns.
   - Divided into layers: `Presentation`, `Domain`, and `Data`.
@@ -36,6 +36,11 @@ The **Noteful** is a modern Android application designed to help users efficient
 - **Coroutines**: 
   - For efficient and seamless handling of background operations.
 
+### 📦 Data Persistence
+- **Room Database**: 
+  - Provides a robust, SQLite-based solution for local data storage.
+  - Ensures offline accessibility and seamless data management.
+
 ---
 
 ## Installation
@@ -47,7 +52,7 @@ The **Noteful** is a modern Android application designed to help users efficient
 ### Steps to Run the App
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/note-app.git
+   git clone https://github.com/AbdoTalaat74/Noteful
    ```
 2. Open the project in Android Studio.
 3. Sync the project to download dependencies.
@@ -59,6 +64,7 @@ The **Noteful** is a modern Android application designed to help users efficient
 ```
 ├── data
 │   ├── repository   # Data sources implementation
+│   ├── local        # Room database and DAO classes
 ├── domain
 │   ├── model        # Business models
 │   ├── repository   # Repository interfaces
@@ -79,18 +85,16 @@ The **Noteful** is a modern Android application designed to help users efficient
 <img src="https://github.com/user-attachments/assets/2611d8d9-f23a-416c-91dc-b8b436a05570" alt="description" width="200"/>
 </div>
 
-
 ---
 
 ## Screen Record
 
-
 https://github.com/user-attachments/assets/519d2c29-1b8c-4301-9dbb-e0ff94413015
 
-
+---
 
 ## Acknowledgements
-- **Google**: For Jetpack Compose and Android architecture guidelines.
+- **Google**: For Jetpack Compose, Room Database, and Android architecture guidelines.
 
 ---
 
