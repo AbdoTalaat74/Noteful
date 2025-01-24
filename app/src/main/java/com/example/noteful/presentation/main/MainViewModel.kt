@@ -73,8 +73,6 @@ class MainViewModel @Inject constructor(
     init {
         getNotes()
         getCategories()
-
-
     }
 
 
@@ -137,7 +135,6 @@ class MainViewModel @Inject constructor(
             try {
                 notesUseCases.addCategoryUseCase.addCategory(category)
                 getCategories()
-                getNotes()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -164,7 +161,6 @@ class MainViewModel @Inject constructor(
             try {
                 notesUseCases.updateCategoryUseCase(_categorySelected.value, newName)
                 getCategories()
-                getNotes()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -175,7 +171,6 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 notesUseCases.deleteCategoryWithNotesUseCase(Category(_categorySelected.value))
-
                 getCategories()
                 getNotes()
             } catch (e: Exception) {
