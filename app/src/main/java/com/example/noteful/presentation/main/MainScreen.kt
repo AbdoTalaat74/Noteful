@@ -1,9 +1,12 @@
 package com.example.noteful.presentation.main
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -19,9 +22,11 @@ import androidx.compose.material3.Tab
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
@@ -30,6 +35,7 @@ import com.example.myapplication.R
 import com.example.noteful.domain.model.Category
 import com.example.noteful.domain.model.Note
 import com.example.noteful.presentation.composables.CategoryCard
+import com.example.noteful.presentation.composables.EditCategoriesMenu
 import com.example.noteful.presentation.composables.NoteCard
 import com.example.noteful.presentation.composables.SearchBar
 import com.example.noteful.ui.theme.dimens
@@ -44,12 +50,17 @@ fun MainScreen(
     categoryState: CategoryState,
     onNoteClick: (note: Note) -> Unit,
     onCategoryChanged: (String) -> Unit,
-    onFloatingActionButtonClick:()-> Unit,
-    onAddCategoryClick:() -> Unit = {}
+    onFloatingActionButtonClick: () -> Unit,
+    onAddCategoryClick: () -> Unit = {},
+    onDeleteCategory: () -> Unit,
+    onEditCategoryName: () -> Unit,
+    onError: () -> Unit,
+    onDeleteCategoryNotes: () -> Unit
 ) {
 
-    var selectedTabIndex by rememberSaveable { mutableIntStateOf(-1)  }  // Track selected tab index
-
+    var selectedTabIndex by rememberSaveable { mutableIntStateOf(-1) }  // Track selected tab index
+    val selectedCategoryName by rememberSaveable { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf(Category(selectedCategoryName)) }
     Scaffold(
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
@@ -71,18 +82,50 @@ fun MainScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
+            verticalArrangement = Arrangement.Center
         ) {
-            SearchBar(
-                searchText = searchText,
-                readOnly = false,
-                onValueChange = {
-                    onSearchTextChange(it)
-                },
-                onSearch = {
-                    onSearch(it)
-                },
-            )
+            Row(modifier = Modifier.fillMaxWidth()) {
+                SearchBar(
+                    modifier = Modifier.weight(0.90f),
+                    searchText = searchText,
+                    readOnly = false,
+                    onValueChange = {
+                        onSearchTextChange(it)
+                    },
+                    onSearch = {
+                        onSearch(it)
+                    },
+                )
+                EditCategoriesMenu(
+                    modifier = Modifier
+                        .weight(0.1f)
+                        .align(Alignment.CenterVertically),
+                    onEditClick = {
+                        onEditCategoryName()
+                    },
+                    onDeleteClick = {
+                        if (selectedTabIndex == -1) {
+                            onError()
+                        } else {
+                            onDeleteCategory()
+                        }
+
+                    },
+                    onAddClick = {
+                        onAddCategoryClick()
+                    },
+                    onDeleteCategoryNotes = {
+                        if (selectedTabIndex == -1) {
+                            onError()
+                        } else {
+                            selectedTabIndex = -1
+                            onDeleteCategoryNotes()
+                        }
+                    }
+                )
+            }
+
             Spacer(modifier = Modifier.height(MaterialTheme.dimens.small1))
 
             ScrollableTabRow(
@@ -104,8 +147,9 @@ fun MainScreen(
                             category = Category(
                                 categoryName = "All"
                             ),
-                            containerColor = if (selectedTabIndex == -1) colorResource(R.color.selected_tab_container) else Color.Transparent
-                        )
+                            containerColor = if (selectedTabIndex == -1) colorResource(R.color.selected_tab_container) else Color.Transparent,
+
+                            )
                     },
                     selectedContentColor = if (isSystemInDarkTheme()) Color.Black else Color.White,
                     unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
@@ -119,11 +163,12 @@ fun MainScreen(
                         onClick = {
                             selectedTabIndex = index
                             onCategoryChanged(category.categoryName)
+                            selectedCategory = category
                         },
                         content = {
                             CategoryCard(
                                 category = category,
-                                containerColor = containerColor
+                                containerColor = containerColor,
                             )
                         },
                         selectedContentColor = if (isSystemInDarkTheme()) Color.Black else Color.White,
@@ -131,22 +176,23 @@ fun MainScreen(
                     )
                 }
 
-                Tab(
-                    selected = false,
-                    onClick = {
-                        onAddCategoryClick()
-                    },
-                    content = {
-                        CategoryCard(
-                            category = Category(
-                                categoryName = "Add Category"
-                            ),
-                            containerColor = Color.Transparent
-                        )
-                    },
-
-                    unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                )
+//                Tab(
+//                    selected = false,
+//                    onClick = {
+//                        onAddCategoryClick()
+//                    },
+//                    content = {
+//                        CategoryCard(
+//                            category = Category(
+//                                categoryName = "Add Category"
+//                            ),
+//                            containerColor = Color.Transparent,
+//
+//                            )
+//                    },
+//
+//                    unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+//                )
 
             }
             Spacer(modifier = Modifier.height(MaterialTheme.dimens.small1))

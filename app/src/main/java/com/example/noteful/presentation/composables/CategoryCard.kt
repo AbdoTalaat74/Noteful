@@ -21,7 +21,7 @@ import com.example.noteful.ui.theme.dimens
 fun CategoryCard(
     modifier: Modifier = Modifier,
     category: Category,
-    containerColor: Color
+    containerColor: Color,
 ) {
     Card(
         modifier = modifier
@@ -31,6 +31,7 @@ fun CategoryCard(
                 color = if (isSystemInDarkTheme()) Color.LightGray else Color.DarkGray,
                 shape =RoundedCornerShape(MaterialTheme.dimens.small1)
             )
+
         ,
         shape = RoundedCornerShape(MaterialTheme.dimens.small1),
         colors = CardDefaults.cardColors(containerColor = containerColor),

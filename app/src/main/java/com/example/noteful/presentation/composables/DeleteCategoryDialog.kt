@@ -1,19 +1,19 @@
 package com.example.noteful.presentation.composables
 
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.example.noteful.ui.theme.dimens
 
 @Composable
-fun InputDialog(
-    initialText: String = "",
+fun DeleteCategoryDialog(
+    categoryName: String,
     onCancel: () -> Unit,
-    onDone: (String) -> Unit
+    onDelete: () -> Unit
 ) {
-    var text by remember { mutableStateOf(initialText) }
 
     Dialog(onDismissRequest = onCancel) {
         Surface(
@@ -22,18 +22,10 @@ fun InputDialog(
         ) {
             Column(
                 modifier = Modifier
-                    .padding(MaterialTheme.dimens.small2)
+                    .padding(16.dp)
                     .fillMaxWidth()
             ) {
-                TextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = MaterialTheme.dimens.small2),
-                    singleLine = true,
-                    placeholder = { Text("Enter Category Name...") }
-                )
+                Text(text = "Are you sure you want to delete $categoryName ?")
                 Row(
                     horizontalArrangement = Arrangement.End,
                     modifier = Modifier.fillMaxWidth()
@@ -42,12 +34,9 @@ fun InputDialog(
                         Text("Cancel")
                     }
                     TextButton(onClick = {
-                        if (text.isNotEmpty()){
-                            onDone(text)
-
-                        }
+                        onDelete()
                     }) {
-                        Text("Done")
+                        Text("Delete")
                     }
                 }
             }

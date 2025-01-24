@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -23,6 +24,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.noteful.domain.model.Category
 import com.example.noteful.domain.model.Note
+import com.example.noteful.presentation.composables.DeleteCategoryDialog
+import com.example.noteful.presentation.composables.ErrorDialog
 import com.example.noteful.presentation.composables.InputDialog
 import com.example.noteful.presentation.main.MainScreen
 import com.example.noteful.presentation.main.MainViewModel
@@ -37,6 +40,7 @@ import kotlinx.serialization.Serializable
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        installSplashScreen()
         enableEdgeToEdge()
         setContent {
             MyApplicationTheme(dynamicColor = false) {
@@ -50,21 +54,68 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun NotesAroundApp() {
-        var showDialog by remember { mutableStateOf(false) }
+        var showCategoryNameDialog by remember { mutableStateOf(false) }
+        var showDeleteCategoryDialog by remember { mutableStateOf(false) }
+        var showDeleteCategoryWithNotesDialog by remember { mutableStateOf(false) }
+        var showErrorDialog by remember { mutableStateOf(false) }
+        var showUpdateCategoryDialog by remember { mutableStateOf(false) }
         val navController = rememberNavController()
         val mainViewModel: MainViewModel = hiltViewModel()
-        Log.e("DialogInputLig",showDialog.toString())
+        val selectedCategory by mainViewModel.categorySelected.collectAsState()
+        Log.e("DialogInputLig", showCategoryNameDialog.toString())
 
-        if (showDialog){
+        if (showCategoryNameDialog) {
             InputDialog(
-                title = "Enter Category Name",
                 onCancel = {
-                    showDialog = false
-                           },
+                    showCategoryNameDialog = false
+                },
                 onDone = { input ->
                     mainViewModel.addCategory(Category(categoryName = input))
-                    showDialog = false
+                    showCategoryNameDialog = false
                 }
+            )
+        }
+
+        if (showErrorDialog) {
+            ErrorDialog(
+                onCancel = {
+                    showErrorDialog = false
+                }
+            )
+        }
+        if (showDeleteCategoryDialog) {
+            DeleteCategoryDialog(
+                categoryName = selectedCategory,
+                onCancel = {
+                    showDeleteCategoryDialog = false
+                },
+                onDelete = {
+                    mainViewModel.deleteCategory()
+                    showDeleteCategoryDialog = false
+                }
+            )
+        }
+        if (showUpdateCategoryDialog) {
+            InputDialog(
+                onCancel = {
+                    showUpdateCategoryDialog = false
+                },
+                onDone = { newName ->
+                    showUpdateCategoryDialog = false
+                    mainViewModel.updateCategory(newName)
+                }
+            )
+        }
+        if (showDeleteCategoryWithNotesDialog) {
+            DeleteCategoryDialog(
+                categoryName = selectedCategory,
+                onCancel = {
+                    showDeleteCategoryWithNotesDialog = false
+                },
+                onDelete = {
+                    mainViewModel.deleteCategoryWithNotes()
+                    showDeleteCategoryWithNotesDialog = false
+                },
             )
         }
 
@@ -77,18 +128,18 @@ class MainActivity : ComponentActivity() {
                 val noteState by mainViewModel.notesState.collectAsState()
                 val categoryState by mainViewModel.categoriesState.collectAsState()
                 val query by mainViewModel.query.collectAsState()
-                val selectedCategory by mainViewModel.categorySelected.collectAsState()
 
 
                 val navBackStackEntry = navController.currentBackStackEntry
-                navBackStackEntry?.savedStateHandle?.getLiveData<Boolean>("refresh_notes")?.observeForever { shouldRefresh ->
-                    if (shouldRefresh == true) {
-                        Log.e("navBackStackEntryLog","Refreshed")
-                        mainViewModel.refreshNotes()
-                        // Reset the value to prevent repeated refreshes
-                        navBackStackEntry.savedStateHandle["refresh_notes"] = false
+                navBackStackEntry?.savedStateHandle?.getLiveData<Boolean>("refresh_notes")
+                    ?.observeForever { shouldRefresh ->
+                        if (shouldRefresh == true) {
+
+                            mainViewModel.refreshNotes()
+                            // Reset the value to prevent repeated refreshes
+                            navBackStackEntry.savedStateHandle["refresh_notes"] = false
+                        }
                     }
-                }
 
                 MainScreen(
                     modifier = Modifier
@@ -125,7 +176,6 @@ class MainActivity : ComponentActivity() {
                         }
                     },
                     onCategoryChanged = {
-                        Log.e("updateCategorySelectedLog",it)
                         mainViewModel.updateCategorySelected(it)
                     },
                     onFloatingActionButtonClick = {
@@ -142,7 +192,20 @@ class MainActivity : ComponentActivity() {
                         )
                     },
                     onAddCategoryClick = {
-                        showDialog = true
+                        showCategoryNameDialog = true
+                    },
+                    onDeleteCategory = {
+                        showDeleteCategoryDialog = true
+                    },
+                    onEditCategoryName = {
+                        showUpdateCategoryDialog = true
+                    },
+                    onError = {
+                        showErrorDialog = true
+
+                    },
+                    onDeleteCategoryNotes = {
+                        showDeleteCategoryWithNotesDialog = true
                     }
 
 
@@ -153,23 +216,26 @@ class MainActivity : ComponentActivity() {
                 val noteId = it.toRoute<NoteScreenRout>().noteId
                 val isNewNote = it.toRoute<NoteScreenRout>().noteText.isEmpty()
                 val noteCategoryName = it.toRoute<NoteScreenRout>().noteCategoryName
-                val noteViewModel:NoteViewModel = hiltViewModel()
+                val noteViewModel: NoteViewModel = hiltViewModel()
                 val noteState by noteViewModel.noteState.collectAsState()
-                if (isNewNote){
+                if (isNewNote) {
                     noteViewModel.updateCategoryName(noteCategoryName)
-                    Log.e("updateCategoryName",noteCategoryName)
+                    Log.e("updateCategoryName", noteCategoryName)
                 }
                 NoteScreen(
                     noteId = noteId,
                     isNewNote = isNewNote,
                     onBackClick = {
-                        if (noteState.note.text == ""){
+                        if (noteState.note.text == "") {
                             noteViewModel.deleteNote(noteState.note)
-                        }else{
+                        } else {
                             noteViewModel.saveNote()
                             Log.e("onBackClick", noteState.note.text)
                         }
-                        navController.previousBackStackEntry?.savedStateHandle?.set("refresh_notes", true)
+                        navController.previousBackStackEntry?.savedStateHandle?.set(
+                            "refresh_notes",
+                            true
+                        )
                         navController.navigateUp()
                     }
                 )

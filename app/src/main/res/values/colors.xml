@@ -30,6 +30,7 @@
     <color name="seafoam_green">#B8E0D9</color> <!-- Seafoam Green -->
     <color name="buttermilk">#F7E8B3</color> <!-- Buttermilk -->
     <color name="light_rose">#F5C7D1</color> <!-- Light Rose -->
+    <color name="noteful_splash_background">#bbc8cb</color>
 
     <!-- Define Array of Color References -->
     <array name="more_light_colors">

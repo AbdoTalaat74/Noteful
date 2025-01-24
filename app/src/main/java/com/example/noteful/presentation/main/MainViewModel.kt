@@ -25,7 +25,6 @@ class MainViewModel @Inject constructor(
     }
 
 
-
     private val _categorySelected = MutableStateFlow("All")
     val categorySelected: StateFlow<String> = _categorySelected
 
@@ -110,7 +109,11 @@ class MainViewModel @Inject constructor(
     }
 
     fun refreshNotes() {
-        getNotes()
+        if (_categorySelected.value == "All") {
+            getNotes()
+        } else {
+            getNotesByCategory(_categorySelected.value)
+        }
     }
 
     private fun getCategories() {
@@ -134,11 +137,51 @@ class MainViewModel @Inject constructor(
             try {
                 notesUseCases.addCategoryUseCase.addCategory(category)
                 getCategories()
+                getNotes()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
 
+    }
+
+    fun deleteCategory() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                notesUseCases.deleteCategoryUseCase(Category(_categorySelected.value))
+                getCategories()
+                getNotes()
+
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun updateCategory(newName: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                notesUseCases.updateCategoryUseCase(_categorySelected.value, newName)
+                getCategories()
+                getNotes()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun deleteCategoryWithNotes() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                notesUseCases.deleteCategoryWithNotesUseCase(Category(_categorySelected.value))
+
+                getCategories()
+                getNotes()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
 }

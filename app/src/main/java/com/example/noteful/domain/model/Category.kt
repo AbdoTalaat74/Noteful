@@ -7,5 +7,5 @@ import androidx.room.PrimaryKey
 @Entity
 data class Category(
     @PrimaryKey(autoGenerate = false)
-    val categoryName:String,
+    val categoryName:String ="",
 )

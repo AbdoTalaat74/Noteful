@@ -8,9 +8,9 @@ import com.example.noteful.domain.repository.NotesRepository
 
 class RepositoryImpl(
     private val dao: NotesDao
-):NotesRepository {
+) : NotesRepository {
     override suspend fun getNotes(): List<Note> {
-       return dao.getNotes()
+        return dao.getNotes()
     }
 
     override suspend fun upsertNote(note: Note) {
@@ -39,6 +39,20 @@ class RepositoryImpl(
 
     override suspend fun deleteNote(note: Note) {
         dao.deleteNote(note)
+    }
+
+    override suspend fun updateCategory(oldName: String, newName: String) {
+        dao.updateCategoryName(oldName,newName)
+        dao.updateNotesCategoryName(oldName,newName)
+        dao.updateNotesCategoryName(oldName, newName)
+    }
+
+    override suspend fun deleteCategory(category: Category) {
+        dao.deleteCategory(category)
+    }
+
+    override suspend fun deleteCategoryWithNotes(category: Category) {
+        dao.deleteCategoryWithNotes(category)
     }
 
 }
