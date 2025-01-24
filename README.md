@@ -74,8 +74,11 @@ The **Noteful** is a modern Android application designed to help users efficient
 
 ## Screenshots
 
-![Image](https://github.com/user-attachments/assets/402a0cbf-8a9a-43d8-8991-ac2d5234fa43)
-![Screenshot_20250124_233306](https://github.com/user-attachments/assets/2611d8d9-f23a-416c-91dc-b8b436a05570)
+<div>
+<img src="https://github.com/user-attachments/assets/402a0cbf-8a9a-43d8-8991-ac2d5234fa43" alt="description" width="200"/>
+<img src="https://github.com/user-attachments/assets/2611d8d9-f23a-416c-91dc-b8b436a05570" alt="description" width="200"/>
+</div>
+
 
 ---
 
@@ -93,6 +96,6 @@ https://github.com/user-attachments/assets/519d2c29-1b8c-4301-9dbb-e0ff94413015
 
 ## Contact
 For any inquiries, please reach out to:
-- **Abdelrahman Talaat **
+- **Abdelrahman Talaat**
 - Email: abdelrahmant.dev@gmail.com
 - GitHub: https://github.com/AbdoTalaat74
