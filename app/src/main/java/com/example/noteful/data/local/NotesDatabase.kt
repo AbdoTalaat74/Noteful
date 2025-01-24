@@ -7,7 +7,7 @@ import com.example.noteful.domain.model.Note
 
 @Database(
     entities = [Note::class, Category::class],
-    version = 2
+    version = 3
 )
 abstract class NotesDatabase:RoomDatabase() {
     abstract val notesDao:NotesDao

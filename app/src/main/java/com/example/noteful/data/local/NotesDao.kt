@@ -18,6 +18,7 @@ interface NotesDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertCategory(category: Category)
 
+
     @Delete
     suspend fun deleteNote(note: Note)
 
@@ -35,10 +36,6 @@ interface NotesDao {
     suspend fun searchNotes(query: String): List<Note>
 
 
-    @Query("SELECT * FROM Note WHERE categoryName = :categoryName")
-    suspend fun getNotesByCategory(categoryName: String): List<Note>
-
-
     @Query("SELECT * FROM Category WHERE categoryName = :categoryName")
     suspend fun getCategoryByName(categoryName: String): Category?
 
@@ -48,4 +45,25 @@ interface NotesDao {
     @Transaction
     @Query("SELECT * FROM Category WHERE categoryName = :categoryName")
     suspend fun getCategoryWithNotes(categoryName: String):List<CategoryWithNotes>
+
+    @Query("UPDATE Category SET categoryName = :newName WHERE categoryName = :oldName")
+    suspend fun updateCategoryName(oldName: String, newName: String)
+
+    @Query("UPDATE Note SET categoryName = :newName WHERE categoryName = :oldName")
+    suspend fun updateNotesCategoryName(oldName: String, newName: String)
+
+    @Transaction
+    suspend fun updateCategoryAndNotes(oldName: String, newName: String) {
+        updateCategoryName(oldName, newName)
+        updateNotesCategoryName(oldName, newName)
+    }
+
+    @Query("DELETE FROM Note WHERE categoryName = :categoryName")
+    suspend fun deleteNotesByCategory(categoryName: String)
+
+    @Transaction
+    suspend fun deleteCategoryWithNotes(category: Category) {
+        deleteNotesByCategory(category.categoryName)
+        deleteCategory(category)
+    }
 }

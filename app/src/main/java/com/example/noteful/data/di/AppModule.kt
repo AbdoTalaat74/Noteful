@@ -7,6 +7,9 @@ import com.example.noteful.data.local.NotesDatabase
 import com.example.noteful.data.repository.RepositoryImpl
 import com.example.noteful.domain.repository.NotesRepository
 import com.example.noteful.domain.usecases.AddCategoryUseCase
+import com.example.noteful.domain.usecases.DeleteCategoryUseCase
+import com.example.noteful.domain.usecases.DeleteCategoryWithNotesUseCase
+import com.example.noteful.domain.usecases.DeleteNoteUseCase
 import com.example.noteful.domain.usecases.UpsertNoteUseCase
 import com.example.noteful.domain.usecases.GetAllNotesUseCase
 import com.example.noteful.domain.usecases.GetCategoriesUseCase
@@ -14,6 +17,7 @@ import com.example.noteful.domain.usecases.GetCategoryWithNotesUseCase
 import com.example.noteful.domain.usecases.GetNoteByIdUseCase
 import com.example.noteful.domain.usecases.NotesUseCases
 import com.example.noteful.domain.usecases.SearchNoteUseCase
+import com.example.noteful.domain.usecases.UpdateCategoryUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -52,7 +56,11 @@ object AppModule {
             getCategoryWithNotesUseCase = GetCategoryWithNotesUseCase(notesRepository),
             getCategoriesUseCase = GetCategoriesUseCase(notesRepository),
             getNoteByIdUseCase = GetNoteByIdUseCase(notesRepository),
-            searchNoteUseCase = SearchNoteUseCase(notesRepository)
+            searchNoteUseCase = SearchNoteUseCase(notesRepository),
+            deleteNoteUseCase = DeleteNoteUseCase(notesRepository),
+            updateCategoryUseCase = UpdateCategoryUseCase(notesRepository),
+            deleteCategoryUseCase = DeleteCategoryUseCase(notesRepository),
+            deleteCategoryWithNotesUseCase = DeleteCategoryWithNotesUseCase(notesRepository)
         )
     }
 

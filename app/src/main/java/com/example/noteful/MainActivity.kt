@@ -1,6 +1,7 @@
 package com.example.noteful
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -11,12 +12,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.example.noteful.domain.model.Category
+import com.example.noteful.domain.model.Note
+import com.example.noteful.presentation.composables.DeleteCategoryDialog
+import com.example.noteful.presentation.composables.ErrorDialog
+import com.example.noteful.presentation.composables.InputDialog
 import com.example.noteful.presentation.main.MainScreen
 import com.example.noteful.presentation.main.MainViewModel
 import com.example.noteful.presentation.note.NoteScreen
@@ -30,11 +40,13 @@ import kotlinx.serialization.Serializable
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        installSplashScreen()
         enableEdgeToEdge()
         setContent {
             MyApplicationTheme(dynamicColor = false) {
 
                 NotesAroundApp()
+
             }
 
         }
@@ -42,16 +54,93 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun NotesAroundApp() {
+        var showCategoryNameDialog by remember { mutableStateOf(false) }
+        var showDeleteCategoryDialog by remember { mutableStateOf(false) }
+        var showDeleteCategoryWithNotesDialog by remember { mutableStateOf(false) }
+        var showErrorDialog by remember { mutableStateOf(false) }
+        var showUpdateCategoryDialog by remember { mutableStateOf(false) }
         val navController = rememberNavController()
+        val mainViewModel: MainViewModel = hiltViewModel()
+        val selectedCategory by mainViewModel.categorySelected.collectAsState()
+        Log.e("DialogInputLig", showCategoryNameDialog.toString())
+
+        if (showCategoryNameDialog) {
+            InputDialog(
+                onCancel = {
+                    showCategoryNameDialog = false
+                },
+                onDone = { input ->
+                    mainViewModel.addCategory(Category(categoryName = input))
+                    showCategoryNameDialog = false
+                }
+            )
+        }
+
+        if (showErrorDialog) {
+            ErrorDialog(
+                onCancel = {
+                    showErrorDialog = false
+                }
+            )
+        }
+        if (showDeleteCategoryDialog) {
+            DeleteCategoryDialog(
+                categoryName = selectedCategory,
+                onCancel = {
+                    showDeleteCategoryDialog = false
+                },
+                onDelete = {
+                    mainViewModel.deleteCategory()
+                    showDeleteCategoryDialog = false
+                }
+            )
+        }
+        if (showUpdateCategoryDialog) {
+            InputDialog(
+                onCancel = {
+                    showUpdateCategoryDialog = false
+                },
+                onDone = { newName ->
+                    showUpdateCategoryDialog = false
+                    mainViewModel.updateCategory(newName)
+                }
+            )
+        }
+        if (showDeleteCategoryWithNotesDialog) {
+            DeleteCategoryDialog(
+                categoryName = selectedCategory,
+                onCancel = {
+                    showDeleteCategoryWithNotesDialog = false
+                },
+                onDelete = {
+                    mainViewModel.deleteCategoryWithNotes()
+                    showDeleteCategoryWithNotesDialog = false
+                },
+            )
+        }
+
+
         NavHost(
             navController = navController,
             startDestination = MainScreenRout
         ) {
             composable<MainScreenRout> {
-                val mainViewModel: MainViewModel = hiltViewModel()
                 val noteState by mainViewModel.notesState.collectAsState()
                 val categoryState by mainViewModel.categoriesState.collectAsState()
                 val query by mainViewModel.query.collectAsState()
+
+
+                val navBackStackEntry = navController.currentBackStackEntry
+                navBackStackEntry?.savedStateHandle?.getLiveData<Boolean>("refresh_notes")
+                    ?.observeForever { shouldRefresh ->
+                        if (shouldRefresh == true) {
+
+                            mainViewModel.refreshNotes()
+                            // Reset the value to prevent repeated refreshes
+                            navBackStackEntry.savedStateHandle["refresh_notes"] = false
+                        }
+                    }
+
                 MainScreen(
                     modifier = Modifier
                         .fillMaxSize()
@@ -66,49 +155,93 @@ class MainActivity : ComponentActivity() {
                     onNoteClick = {
                         navController.navigate(
                             NoteScreenRout(
-                                noteId = it.id,
+                                it.id,
+                                it.text,
+                                it.categoryName
                             )
                         )
                     },
                     onSearchTextChange = {
-                        if (it.isEmpty()){
+                        if (it.isEmpty()) {
                             mainViewModel.onSearchEmpty()
                             mainViewModel.updateQuery(it)
-                        }else{
+                        } else {
                             mainViewModel.updateQuery(it)
                             mainViewModel.searchNote(it)
                         }
                     },
                     onSearch = {
-                        if (it.isNotEmpty()){
+                        if (it.isNotEmpty()) {
                             mainViewModel.searchNote(it)
                         }
                     },
                     onCategoryChanged = {
                         mainViewModel.updateCategorySelected(it)
+                    },
+                    onFloatingActionButtonClick = {
+                        val note = Note(
+                            text = "",
+                            categoryName = selectedCategory
+                        )
+                        navController.navigate(
+                            NoteScreenRout(
+                                noteId = note.id,
+                                noteText = note.text,
+                                noteCategoryName = selectedCategory
+                            )
+                        )
+                    },
+                    onAddCategoryClick = {
+                        showCategoryNameDialog = true
+                    },
+                    onDeleteCategory = {
+                        showDeleteCategoryDialog = true
+                    },
+                    onEditCategoryName = {
+                        showUpdateCategoryDialog = true
+                    },
+                    onError = {
+                        showErrorDialog = true
+
+                    },
+                    onDeleteCategoryNotes = {
+                        showDeleteCategoryWithNotesDialog = true
+                    }
+
+
+                )
+
+            }
+            composable<NoteScreenRout> {
+                val noteId = it.toRoute<NoteScreenRout>().noteId
+                val isNewNote = it.toRoute<NoteScreenRout>().noteText.isEmpty()
+                val noteCategoryName = it.toRoute<NoteScreenRout>().noteCategoryName
+                val noteViewModel: NoteViewModel = hiltViewModel()
+                val noteState by noteViewModel.noteState.collectAsState()
+                if (isNewNote) {
+                    noteViewModel.updateCategoryName(noteCategoryName)
+                    Log.e("updateCategoryName", noteCategoryName)
+                }
+                NoteScreen(
+                    noteId = noteId,
+                    isNewNote = isNewNote,
+                    onBackClick = {
+                        if (noteState.note.text == "") {
+                            noteViewModel.deleteNote(noteState.note)
+                        } else {
+                            noteViewModel.saveNote()
+                            Log.e("onBackClick", noteState.note.text)
+                        }
+                        navController.previousBackStackEntry?.savedStateHandle?.set(
+                            "refresh_notes",
+                            true
+                        )
+                        navController.navigateUp()
                     }
                 )
             }
-
-            composable<NoteScreenRout> {
-                val noteViewModel: NoteViewModel = hiltViewModel()
-                val noteId = it.toRoute<NoteScreenRout>().noteId
-                noteViewModel.updateNoteId(noteId)
-
-                val noteState by noteViewModel.noteState.collectAsState()
-
-                NoteScreen(
-                    noteState = noteState,
-                    onBackClick = {
-                        noteViewModel.saveNote()
-                        navController.navigateUp()
-                    },
-                    onClipboardClick = {},
-                    onFavoriteClick = {}
-                )
-
-            }
         }
+
     }
 
     @Serializable
@@ -117,6 +250,8 @@ class MainActivity : ComponentActivity() {
     @Serializable
     data class NoteScreenRout(
         val noteId: Int,
+        val noteText: String,
+        val noteCategoryName: String
     )
 }
 

@@ -3,7 +3,6 @@ package com.example.noteful.presentation.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.noteful.domain.model.Category
-import com.example.noteful.domain.model.Note
 import com.example.noteful.domain.usecases.NotesUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -31,10 +30,26 @@ class MainViewModel @Inject constructor(
 
     fun updateCategorySelected(newSelectedCategory: String) {
         _categorySelected.value = newSelectedCategory
-        if (newSelectedCategory == "All"){
+        if (newSelectedCategory == "All") {
             getNotes()
-        }else{
-//            getNotesByCategory(newSelectedCategory)
+        } else {
+            getNotesByCategory(newSelectedCategory)
+        }
+    }
+
+    private fun getNotesByCategory(selectedCategory: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val notes =
+                    notesUseCases.getCategoryWithNotesUseCase(categoryName = selectedCategory)
+                notes.forEach {
+                    _notesState.value = _notesState.value.copy(
+                        notes = it.notes
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -74,18 +89,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-
-    private fun addNote(note: Note) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                notesUseCases.upsertNoteUseCase.addNote(note)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
-    fun onSearchEmpty(){
+    fun onSearchEmpty() {
         getNotes()
     }
 
@@ -99,6 +103,14 @@ class MainViewModel @Inject constructor(
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }
+    }
+
+    fun refreshNotes() {
+        if (_categorySelected.value == "All") {
+            getNotes()
+        } else {
+            getNotesByCategory(_categorySelected.value)
         }
     }
 
@@ -122,11 +134,49 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 notesUseCases.addCategoryUseCase.addCategory(category)
+                getCategories()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
 
+    }
+
+    fun deleteCategory() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                notesUseCases.deleteCategoryUseCase(Category(_categorySelected.value))
+                getCategories()
+                getNotes()
+
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun updateCategory(newName: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                notesUseCases.updateCategoryUseCase(_categorySelected.value, newName)
+                getCategories()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun deleteCategoryWithNotes() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                notesUseCases.deleteCategoryWithNotesUseCase(Category(_categorySelected.value))
+                getCategories()
+                getNotes()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
 }
