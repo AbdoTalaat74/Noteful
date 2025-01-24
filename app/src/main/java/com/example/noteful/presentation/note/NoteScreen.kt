@@ -2,11 +2,11 @@ package com.example.noteful.presentation.note
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -27,18 +27,19 @@ import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
+import com.example.noteful.ui.theme.dimens
 
 @Composable
 fun NoteScreen(
     modifier: Modifier = Modifier,
-    noteId:Int,
-    isNewNote:Boolean = false,
-    onBackClick: () ->Unit
+    noteId: Int,
+    isNewNote: Boolean = false,
+    onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
     val clipboardManager: ClipboardManager = LocalClipboardManager.current
     val noteViewModel: NoteViewModel = hiltViewModel()
-    if (!isNewNote){
+    if (!isNewNote) {
         noteViewModel.getNoteById(noteId)
     }
     val noteState by noteViewModel.noteState.collectAsState()
@@ -59,24 +60,26 @@ fun NoteScreen(
         }
     ) { paddingValues ->
 
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            BasicTextField(
-                value = noteState.note.text,
-                onValueChange = {
-                    noteViewModel.updateNoteText(it)
-                },
-                visualTransformation = HeaderBodyTransformation(),
-                textStyle = MaterialTheme.typography.bodySmall.copy(
-                    color = MaterialTheme.colorScheme.onBackground
-                ),
-                modifier = Modifier.fillMaxSize()
-            )
+            item {
+                BasicTextField(
+                    value = noteState.note.text,
+                    onValueChange = {
+                        noteViewModel.updateNoteText(it)
+                    },
+                    visualTransformation = HeaderBodyTransformation(),
+                    textStyle = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onBackground
+                    ),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = MaterialTheme.dimens.small1)
+                )
+            }
         }
     }
 
