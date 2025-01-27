@@ -11,5 +11,6 @@ data class NotesUseCases(
     val deleteNoteUseCase: DeleteNoteUseCase,
     val updateCategoryUseCase: UpdateCategoryUseCase,
     val deleteCategoryUseCase: DeleteCategoryUseCase,
-    val deleteCategoryWithNotesUseCase: DeleteCategoryWithNotesUseCase
+    val deleteCategoryWithNotesUseCase: DeleteCategoryWithNotesUseCase,
+    val getFavoriteNotesUseCase: GetFavoriteNotesUseCase
 )

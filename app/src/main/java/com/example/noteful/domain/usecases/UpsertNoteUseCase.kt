@@ -6,7 +6,7 @@ import com.example.noteful.domain.repository.NotesRepository
 class UpsertNoteUseCase(
     private val newsRepository: NotesRepository
 ) {
-    suspend fun addNote(note: Note){
+    suspend fun upsertNote(note: Note){
         newsRepository.upsertNote(note)
     }
 }

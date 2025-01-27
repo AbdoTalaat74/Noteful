@@ -46,7 +46,7 @@ fun MainScreen(
     searchText: String,
     onSearchTextChange: (String) -> Unit,
     onSearch: (String) -> Unit,
-    noteState: NotesState,
+    notesState: NotesState,
     categoryState: CategoryState,
     onNoteClick: (note: Note) -> Unit,
     onCategoryChanged: (String) -> Unit,
@@ -55,7 +55,8 @@ fun MainScreen(
     onDeleteCategory: () -> Unit,
     onEditCategoryName: () -> Unit,
     onError: () -> Unit,
-    onDeleteCategoryNotes: () -> Unit
+    onDeleteCategoryNotes: () -> Unit,
+    favoriteNotesState: NotesState,
 ) {
 
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(-1) }  // Track selected tab index
@@ -64,19 +65,22 @@ fun MainScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    onFloatingActionButtonClick()
-                },
-                containerColor = colorResource(R.color.selected_tab_container),
-                contentColor = Color.White
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add Note",
-                    tint = if (isSystemInDarkTheme()) Color.Black else Color.White
-                )
+            if (selectedTabIndex!= -2){
+                FloatingActionButton(
+                    onClick = {
+                        onFloatingActionButtonClick()
+                    },
+                    containerColor = colorResource(R.color.selected_tab_container),
+                    contentColor = Color.White
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Note",
+                        tint = if (isSystemInDarkTheme()) Color.Black else Color.White
+                    )
+                }
             }
+
         }
     ) { paddingValues ->
         Column(
@@ -175,24 +179,27 @@ fun MainScreen(
                         unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 }
+                if (favoriteNotesState.notes.isNotEmpty()) {
+                    Tab(
+                        selected = selectedTabIndex == -2,
+                        onClick = {
+                            selectedTabIndex = -2
+                            onCategoryChanged("Favorite")
+                        },
+                        content = {
+                            CategoryCard(
+                                category = Category(
+                                    categoryName = "Favorite"
+                                ),
+                                containerColor = if (selectedTabIndex == -2) colorResource(R.color.selected_tab_container) else Color.Transparent,
 
-//                Tab(
-//                    selected = false,
-//                    onClick = {
-//                        onAddCategoryClick()
-//                    },
-//                    content = {
-//                        CategoryCard(
-//                            category = Category(
-//                                categoryName = "Add Category"
-//                            ),
-//                            containerColor = Color.Transparent,
-//
-//                            )
-//                    },
-//
-//                    unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-//                )
+                                )
+                        },
+                        selectedContentColor = if (isSystemInDarkTheme()) Color.Black else Color.White,
+                        unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    )
+                }
+
 
             }
             Spacer(modifier = Modifier.height(MaterialTheme.dimens.small1))
@@ -200,17 +207,15 @@ fun MainScreen(
                 columns = StaggeredGridCells.Fixed(2),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(noteState.notes.size) { index ->
+                items(notesState.notes.size) { index ->
                     NoteCard(
-                        note = noteState.notes[index],
+                        note = notesState.notes[index],
                         onClick = {
-                            onNoteClick(noteState.notes[index])
+                            onNoteClick(notesState.notes[index])
                         }
                     )
                 }
             }
         }
     }
-
-
 }

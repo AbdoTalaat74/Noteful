@@ -66,4 +66,7 @@ interface NotesDao {
         deleteNotesByCategory(category.categoryName)
         deleteCategory(category)
     }
+
+    @Query("SELECT * FROM Note WHERE isFavorite = 1")
+    suspend fun getFavoriteNotes(): List<Note>
 }
