@@ -20,20 +20,51 @@ class MainViewModel @Inject constructor(
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query
 
-    fun updateQuery(newQuery: String) {
-        _query.value = newQuery
-    }
+
+
+    private val _notesState = MutableStateFlow(
+        NotesState(
+            notes = emptyList(), isLoading = false, error = null
+        )
+    )
+    val notesState: StateFlow<NotesState> = _notesState
+
+
+
+
+    private val _categoriesState = MutableStateFlow(
+        CategoryState(
+            categories = emptyList(), isLoading = false, error = null
+        )
+    )
+    val categoriesState: StateFlow<CategoryState> = _categoriesState
 
 
     private val _categorySelected = MutableStateFlow("All")
     val categorySelected: StateFlow<String> = _categorySelected
 
+    fun updateQuery(newQuery: String) {
+        _query.value = newQuery
+    }
+
+
+    private val _favoriteNotesState = MutableStateFlow(
+        NotesState(
+            notes = emptyList(), isLoading = false, error = null
+        )
+    )
+    val favoriteNotesState: StateFlow<NotesState> = _favoriteNotesState
+
     fun updateCategorySelected(newSelectedCategory: String) {
         _categorySelected.value = newSelectedCategory
-        if (newSelectedCategory == "All") {
-            getNotes()
-        } else {
-            getNotesByCategory(newSelectedCategory)
+        when (newSelectedCategory) {
+            "All" -> getNotes()
+            "Favorite" -> {
+                getFavoriteNotes()
+                _notesState.value = _notesState.value.copy(
+                    notes = _favoriteNotesState.value.notes               )
+            }
+            else -> getNotesByCategory(newSelectedCategory)
         }
     }
 
@@ -54,25 +85,11 @@ class MainViewModel @Inject constructor(
     }
 
 
-    private val _notesState = MutableStateFlow(
-        NotesState(
-            notes = emptyList(), isLoading = false, error = null
-        )
-    )
-    val notesState: StateFlow<NotesState> = _notesState
-
-
-    private val _categoriesState = MutableStateFlow(
-        CategoryState(
-            categories = emptyList(), isLoading = false, error = null
-        )
-    )
-    val categoriesState: StateFlow<CategoryState> = _categoriesState
-
 
     init {
         getNotes()
         getCategories()
+        getFavoriteNotes()
     }
 
 
@@ -121,6 +138,7 @@ class MainViewModel @Inject constructor(
                 _categoriesState.value = _categoriesState.value.copy(
                     categories = categories
                 )
+                getFavoriteNotes()
 
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -173,6 +191,27 @@ class MainViewModel @Inject constructor(
                 notesUseCases.deleteCategoryWithNotesUseCase(Category(_categorySelected.value))
                 getCategories()
                 getNotes()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun getFavoriteNotes() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val notes = notesUseCases.getFavoriteNotesUseCase()
+                _favoriteNotesState.value = _favoriteNotesState.value.copy(
+                    notes =notes
+                )
+                when (_categorySelected.value) {
+                    "All" -> getNotes()
+                    "Favorite" -> {
+                        getFavoriteNotes()
+                        _notesState.value = _notesState.value.copy(
+                            notes = _favoriteNotesState.value.notes               )
+                    }
+                    }
             } catch (e: Exception) {
                 e.printStackTrace()
             }

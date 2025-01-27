@@ -34,7 +34,8 @@ fun NoteScreen(
     modifier: Modifier = Modifier,
     noteId: Int,
     isNewNote: Boolean = false,
-    onBackClick: () -> Unit
+    onBackClick: (Boolean) -> Unit,
+    onFavoriteClick: () -> Unit
 ) {
     val context = LocalContext.current
     val clipboardManager: ClipboardManager = LocalClipboardManager.current
@@ -47,14 +48,16 @@ fun NoteScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             NoteTopAppBar(
+                isFavorite = noteState.note.isFavorite,
                 onBackClick = {
-                    onBackClick()
+                    onBackClick(it)
                 },
                 onClipboardClick = {
                     clipboardManager.setText(AnnotatedString(noteState.note.text))
                     Toast.makeText(context, "Copied to clipboard!", Toast.LENGTH_SHORT).show()
                 },
                 onFavoriteClick = {
+                    onFavoriteClick()
                 }
             )
         }
@@ -71,6 +74,7 @@ fun NoteScreen(
                     onValueChange = {
                         noteViewModel.updateNoteText(it)
                     },
+
                     visualTransformation = HeaderBodyTransformation(),
                     textStyle = MaterialTheme.typography.bodySmall.copy(
                         color = MaterialTheme.colorScheme.onBackground
@@ -88,7 +92,8 @@ fun NoteScreen(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun NoteTopAppBar(
-    onBackClick: () -> Unit,
+    isFavorite: Boolean,
+    onBackClick: (Boolean) -> Unit,
     onClipboardClick: () -> Unit,
     onFavoriteClick: () -> Unit
 ) {
@@ -100,7 +105,7 @@ private fun NoteTopAppBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Back button at the end
-                IconButton(onClick = { onBackClick() }) {
+                IconButton(onClick = { onBackClick(isFavorite) }) {
                     Icon(
                         painter = painterResource(R.drawable.backarrow), // Replace with your back icon
                         contentDescription = "Back Icon"
@@ -117,7 +122,9 @@ private fun NoteTopAppBar(
                     }
                     IconButton(onClick = { onFavoriteClick() }) {
                         Icon(
-                            painter = painterResource(R.drawable.heart), // Replace with your icon
+                            painter = if (isFavorite) painterResource(R.drawable.filled_heart) else painterResource(
+                                R.drawable.heart
+                            ), // Replace with your icon
                             contentDescription = "Add to Favorites"
                         )
                     }

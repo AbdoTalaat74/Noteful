@@ -18,4 +18,5 @@ interface NotesRepository {
     suspend fun updateCategory(oldName: String, newName: String)
     suspend fun deleteCategory(category: Category)
     suspend fun deleteCategoryWithNotes(category: Category)
+    suspend fun getFavoriteNotes(): List<Note>
 }

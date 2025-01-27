@@ -55,4 +55,8 @@ class RepositoryImpl(
         dao.deleteCategoryWithNotes(category)
     }
 
+    override suspend fun getFavoriteNotes(): List<Note> {
+        return dao.getFavoriteNotes()
+    }
+
 }

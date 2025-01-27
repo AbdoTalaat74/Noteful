@@ -1,7 +1,6 @@
 package com.example.noteful
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -48,7 +47,6 @@ class MainActivity : ComponentActivity() {
                 NotesAroundApp()
 
             }
-
         }
     }
 
@@ -62,7 +60,7 @@ class MainActivity : ComponentActivity() {
         val navController = rememberNavController()
         val mainViewModel: MainViewModel = hiltViewModel()
         val selectedCategory by mainViewModel.categorySelected.collectAsState()
-        Log.e("DialogInputLig", showCategoryNameDialog.toString())
+        val favoriteNotesState by mainViewModel.favoriteNotesState.collectAsState()
 
         if (showCategoryNameDialog) {
             InputDialog(
@@ -134,13 +132,11 @@ class MainActivity : ComponentActivity() {
                 navBackStackEntry?.savedStateHandle?.getLiveData<Boolean>("refresh_notes")
                     ?.observeForever { shouldRefresh ->
                         if (shouldRefresh == true) {
-
+                            mainViewModel.getFavoriteNotes()
                             mainViewModel.refreshNotes()
-                            // Reset the value to prevent repeated refreshes
                             navBackStackEntry.savedStateHandle["refresh_notes"] = false
                         }
                     }
-
                 MainScreen(
                     modifier = Modifier
                         .fillMaxSize()
@@ -149,7 +145,7 @@ class MainActivity : ComponentActivity() {
                             horizontal = MaterialTheme.dimens.small1,
                             vertical = MaterialTheme.dimens.small2
                         ),
-                    noteState = noteState,
+                    notesState = noteState,
                     categoryState = categoryState,
                     searchText = query,
                     onNoteClick = {
@@ -206,9 +202,8 @@ class MainActivity : ComponentActivity() {
                     },
                     onDeleteCategoryNotes = {
                         showDeleteCategoryWithNotesDialog = true
-                    }
-
-
+                    },
+                    favoriteNotesState = favoriteNotesState
                 )
 
             }
@@ -220,23 +215,29 @@ class MainActivity : ComponentActivity() {
                 val noteState by noteViewModel.noteState.collectAsState()
                 if (isNewNote) {
                     noteViewModel.updateCategoryName(noteCategoryName)
-                    Log.e("updateCategoryName", noteCategoryName)
                 }
                 NoteScreen(
+                    modifier = Modifier.fillMaxSize(),
                     noteId = noteId,
                     isNewNote = isNewNote,
                     onBackClick = {
+                        if (selectedCategory == "Favorite"){
+                            mainViewModel.getFavoriteNotes()
+                        }
                         if (noteState.note.text == "") {
                             noteViewModel.deleteNote(noteState.note)
                         } else {
                             noteViewModel.saveNote()
-                            Log.e("onBackClick", noteState.note.text)
                         }
                         navController.previousBackStackEntry?.savedStateHandle?.set(
                             "refresh_notes",
                             true
                         )
                         navController.navigateUp()
+                    },
+                    onFavoriteClick = {
+                        noteViewModel.changeNoteFavoriteState()
+
                     }
                 )
             }

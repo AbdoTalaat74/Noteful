@@ -52,7 +52,7 @@ class NoteViewModel @Inject constructor(
     fun saveNote() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                notesUseCases.upsertNoteUseCase.addNote(_noteState.value.note)
+                notesUseCases.upsertNoteUseCase.upsertNote(_noteState.value.note)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -82,6 +82,23 @@ class NoteViewModel @Inject constructor(
                 e.printStackTrace()
             }
         }
+    }
+
+    fun changeNoteFavoriteState(){
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val currentNote = _noteState.value.note
+                _noteState.value = _noteState.value.copy(
+                    note = currentNote.copy(
+                        isFavorite = !currentNote.isFavorite
+                    )
+                )
+                notesUseCases.upsertNoteUseCase.upsertNote(_noteState.value.note)
+            }catch (e:Exception){
+                e.printStackTrace()
+            }
+        }
+
     }
 }
 

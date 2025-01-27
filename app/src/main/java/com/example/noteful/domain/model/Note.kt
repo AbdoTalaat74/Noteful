@@ -10,5 +10,6 @@ data class Note(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val text: String,
-    val categoryName: String
+    val categoryName: String,
+    val isFavorite:Boolean = false
 )

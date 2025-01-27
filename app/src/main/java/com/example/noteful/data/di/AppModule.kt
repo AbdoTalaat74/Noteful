@@ -14,6 +14,7 @@ import com.example.noteful.domain.usecases.UpsertNoteUseCase
 import com.example.noteful.domain.usecases.GetAllNotesUseCase
 import com.example.noteful.domain.usecases.GetCategoriesUseCase
 import com.example.noteful.domain.usecases.GetCategoryWithNotesUseCase
+import com.example.noteful.domain.usecases.GetFavoriteNotesUseCase
 import com.example.noteful.domain.usecases.GetNoteByIdUseCase
 import com.example.noteful.domain.usecases.NotesUseCases
 import com.example.noteful.domain.usecases.SearchNoteUseCase
@@ -60,7 +61,8 @@ object AppModule {
             deleteNoteUseCase = DeleteNoteUseCase(notesRepository),
             updateCategoryUseCase = UpdateCategoryUseCase(notesRepository),
             deleteCategoryUseCase = DeleteCategoryUseCase(notesRepository),
-            deleteCategoryWithNotesUseCase = DeleteCategoryWithNotesUseCase(notesRepository)
+            deleteCategoryWithNotesUseCase = DeleteCategoryWithNotesUseCase(notesRepository),
+            getFavoriteNotesUseCase = GetFavoriteNotesUseCase(notesRepository)
         )
     }
 
